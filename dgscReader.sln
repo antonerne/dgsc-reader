@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1700.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dgscReader", "dgscReader\dgscReader.csproj", "{1563B4DD-FED2-4319-8F86-ED52FBA7394D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1563B4DD-FED2-4319-8F86-ED52FBA7394D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1563B4DD-FED2-4319-8F86-ED52FBA7394D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1563B4DD-FED2-4319-8F86-ED52FBA7394D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1563B4DD-FED2-4319-8F86-ED52FBA7394D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {903A8A00-D757-4E5C-A0BB-3D4881631422}
+	EndGlobalSection
+EndGlobal
