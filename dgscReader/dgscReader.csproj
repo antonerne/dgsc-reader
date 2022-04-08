@@ -5,6 +5,25 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>OsanScheduler.DgscReader</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="MongoDB.Driver" />
+    <None Remove="NPOI" />
+    <None Remove="OsanScheduler" />
+    <None Remove="Readers\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
+    <PackageReference Include="NPOI" Version="2.5.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="OsanScheduler">
+      <HintPath>..\..\models2\models2\bin\Release\net6.0\OsanScheduler.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Readers\" />
+  </ItemGroup>
 </Project>
