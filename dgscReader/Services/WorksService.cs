@@ -29,6 +29,9 @@ namespace OsanScheduler.DgscReader.Services
 		public async Task CreateAsync(Work newWork) =>
 			await this._workCollection.InsertOneAsync(newWork);
 
+		public async Task CreateManyAsync(List<Work> newWorks) =>
+			await this._workCollection.InsertManyAsync(newWorks);
+
 		public async Task UpdateAsync(ObjectId id, Work updated) =>
 			await this._workCollection
 			.ReplaceOneAsync(x => x.Id == id, updated);

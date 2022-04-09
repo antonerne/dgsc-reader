@@ -2,7 +2,7 @@
 using System.IO;
 using OsanScheduler.Models.Sites;
 using OsanScheduler.Models.Teams;
-using OsanScheduler.Models.Employees;
+using OsanScheduler.Models.Employees.Labor;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using OsanScheduler.DgscReader.models;
@@ -44,6 +44,7 @@ Site dgsc = dfs.Sites.First<Site>(s => s.Code == "dgsc");
 var previousYear = DateTime.UtcNow.Year - 1;
 
 // Now get the list of available Employees for the team.
+var emps = new List<ObjectId>();
 if (dfs.Id != ObjectId.Empty)
 {
     var employees = await empService.GetByTeamAsync(dfs.Id);
@@ -53,9 +54,25 @@ if (dfs.Id != ObjectId.Empty)
         if (dgsc.ID.Equals(current) || dgsc.Code.ToLower().Equals(current.ToLower()))
         {
             dgsc.Employees.Add(emp);
+            emps.Add(emp.Id);
         }
     });
 }
+var work = await worksService.GetAsync();
+work.ForEach(wk =>
+{
+    var found = false;
+
+    for (int e=0; e < dgsc.Employees.Count && !found; e++)
+    {
+        var emp = dgsc.Employees[e];
+        if (emp.Id.Equals(wk.EmployeeId))
+        {
+            emp.Work.Add(wk);
+        }
+        dgsc.Employees[e] = emp;
+    }
+});
 
 // get the list of excel files in the designated directory
 var files = Directory.GetFiles(settings.DefaultDataDirectory, "*.xlsx");
@@ -108,6 +125,27 @@ foreach (var file in files)
                 var eReader = new EmpLaborCodeReader(dgsc, file);
                 dgsc = eReader.Process();
                 break;
+            case "holidayschedule.xlsx":
+                Console.WriteLine(file);
+                var hReader = new HolidayScheduleReader(dfs, dgsc.UtcDifference,
+                    file);
+                dfs = hReader.Process();
+                break;
+            case "leaves.xlsx":
+                Console.WriteLine(file);
+                var lReader = new LeavesReader(dgsc, file);
+                dgsc = lReader.Process();
+                break;
+            case "schedulevariations.xlsx":
+                Console.WriteLine(file);
+                var vReader = new VariationReader(dgsc, file);
+                dgsc = vReader.Process();
+                break;
+            case "workhours.xlsx":
+                Console.WriteLine(file);
+                var wReader = new WorkReader(dgsc, file);
+                dgsc = wReader.Process();
+                break;
         }
     }
 }
@@ -119,6 +157,7 @@ dgsc.Employees.ForEach(async (emp) =>
 {
     if (emp.Work.Count > 0)
     {
+        List<Work> newWorks = new List<Work>();
         emp.Work.ForEach(async (wk) =>
         {
             if (wk.Id != ObjectId.Empty)
@@ -127,9 +166,13 @@ dgsc.Employees.ForEach(async (emp) =>
             }
             else
             {
-                await worksService.CreateAsync(wk);
+                newWorks.Add(wk);
             }
         });
+        if (newWorks.Count > 0)
+        {
+            await worksService.CreateManyAsync(newWorks);
+        }
     }
     try
     {

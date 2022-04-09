@@ -33,7 +33,7 @@ namespace OsanScheduler.DgscReader.Readers
 				workbook = new XSSFWorkbook(file);
 			}
 
-			ISheet sheet = workbook.GetSheet("Employees");
+			ISheet sheet = workbook.GetSheetAt(0);
 
 			// the first row of the sheet provides the labels for the data
 			// so, create a dictionary of the labels to the cell id or column
@@ -235,6 +235,7 @@ namespace OsanScheduler.DgscReader.Readers
 						emp.CompanyInfo.Rank = rank;
 						emp.CompanyInfo.Division = division;
 						emp.CompanyInfo.CostCenter = costcenter;
+						emp.Roles.Add("Employee");
 						emp.Creds.SetPassword("InitialPassword");
 
 						// add assignments for start and end dates, but if
