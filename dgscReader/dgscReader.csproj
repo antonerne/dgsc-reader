@@ -9,21 +9,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+      <Content Include="appsettings.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="MongoDB.Driver" />
     <None Remove="NPOI" />
     <None Remove="OsanScheduler" />
     <None Remove="Readers\" />
+    <None Remove="models\" />
+    <None Remove="Microsoft.Extensions.Hosting" />
+    <None Remove="Microsoft.Extensions.Configuration" />
+    <None Remove="Services\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
     <PackageReference Include="NPOI" Version="2.5.5" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="OsanScheduler">
-      <HintPath>..\..\models2\models2\bin\Release\net6.0\OsanScheduler.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Readers\" />
+    <Folder Include="models\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Scheduler\models2\OsanScheduler.csproj" />
   </ItemGroup>
 </Project>
