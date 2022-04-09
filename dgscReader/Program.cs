@@ -23,6 +23,15 @@ IConfiguration config = new ConfigurationBuilder()
 ConnectionStrings settings = config.GetRequiredSection("ConnectionStrings")
     .Get<ConnectionStrings>();
 
+// get the location for the data files
+Console.WriteLine("Scheduler Files Loc ({0}):", settings.DefaultDataDirectory);
+var loc = Console.ReadLine();
+if (loc != null && !loc.Equals(""))
+{
+    settings.DefaultDataDirectory = loc;
+}
+
+
 
 // Create service classes for data
 TeamsService teamService = new TeamsService(settings);
@@ -53,12 +62,17 @@ var files = Directory.GetFiles(settings.DefaultDataDirectory, "*.xlsx");
 
 // find the employee file and process using EmployeeReader class object
 string empFile = "";
+string siteLaborFile = "";
 foreach (var file in files)
 {
     if (file.ToLower().EndsWith("employees.xlsx")
         && !file.ToLower().EndsWith("~$employees.xlsx"))
     {
         empFile = file;
+    } else if (file.ToLower().EndsWith("laborcodes.xlsx")
+        && !file.ToLower().EndsWith("~$laborcodes.xlsx"))
+    {
+        siteLaborFile = file;
     }
 }
 
@@ -66,6 +80,12 @@ if (!empFile.Equals(""))
 {
     Console.WriteLine(empFile);
     EmployeesReader reader = new EmployeesReader(dgsc, dfs.Id, empFile);
+    dgsc = reader.Process();
+}
+if (!siteLaborFile.Equals(""))
+{
+    Console.WriteLine(siteLaborFile);
+    SiteLaborCodeReader reader = new SiteLaborCodeReader(dgsc, siteLaborFile);
     dgsc = reader.Process();
 }
 
@@ -83,6 +103,11 @@ foreach (var file in files)
                 var aReader = new AnnualLeaveReader(dgsc, file);
                 dgsc = aReader.Process();
                 break;
+            case "employeelaborcodes.xlsx":
+                Console.WriteLine(file);
+                var eReader = new EmpLaborCodeReader(dgsc, file);
+                dgsc = eReader.Process();
+                break;
         }
     }
 }
@@ -96,7 +121,7 @@ dgsc.Employees.ForEach(async (emp) =>
     {
         emp.Work.ForEach(async (wk) =>
         {
-            if (wk.Id != null && !wk.Id.Equals(""))
+            if (wk.Id != ObjectId.Empty)
             {
                 await worksService.UpdateAsync(wk.Id, wk);
             }
@@ -121,6 +146,18 @@ dgsc.Employees.ForEach(async (emp) =>
         Console.WriteLine(ex.StackTrace);
     }
 });
+
+// Update the dgsc site in the team and the teams object to the database
+var found = false;
+for (int s=0; s < dfs.Sites.Count && !found; s++)
+{
+    if (dfs.Sites[s].Equals(dgsc))
+    {
+        dfs.Sites[s] = dgsc;
+        found = true;
+    }
+}
+await teamService.UpdateAsync(dfs.Id, dfs);
 
 Console.WriteLine("Completed");
 
