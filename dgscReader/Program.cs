@@ -146,6 +146,11 @@ foreach (var file in files)
                 var wReader = new WorkReader(dgsc, file);
                 dgsc = wReader.Process();
                 break;
+            case "workschedule.xlsx":
+                Console.WriteLine(file);
+                var sReader = new ScheduleReader(dgsc, file);
+                dgsc = sReader.Process();
+                break;
         }
     }
 }
