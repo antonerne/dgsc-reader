@@ -144,6 +144,9 @@ namespace OsanScheduler.DgscReader.Readers
                                     {
 										vari.SetWorkday(d, workcenter, starttime,
 											code, hours);
+                                    } else
+                                    {
+										vari.SetWorkday(d, "", 0, "", 0M);
                                     }
                                 }
 								emp.Variations[v] = vari;
@@ -198,10 +201,13 @@ namespace OsanScheduler.DgscReader.Readers
 								{
 									vari.SetWorkday(d, workcenter, starttime,
 										code, hours);
-								}
-								emp.Variations.Add(vari);
-								found = true;
+								} else
+                                {
+									vari.SetWorkday(d, "", 0, "", 0M);
+                                }
 							}
+							emp.Variations.Add(vari);
+							found = true;
 						}
 						this._dgsc.Employees[e] = emp;
                     }

@@ -52,19 +52,19 @@ namespace OsanScheduler.DgscReader.Readers
 			{
 				row = sheet.GetRow(i);
 				var empID = row.GetCell(labels["EmployeeID"]).StringCellValue;
+				var date = row.GetCell(labels["DateTaken"]).DateCellValue;
 				var code = "";
 				if (row.GetCell(labels["LeaveCode"]) != null)
                 {
 					code = row.GetCell(labels["LeaveCode"]).StringCellValue;
                 }
-				if (!code.Equals(""))
+				if (!code.Equals("") && date >= expireDate)
 				{
 					if (code.ToLower().Substring(0, 1).Equals("h")
 						|| code.ToLower().Substring(0, 1).Equals("f"))
 					{
 						code = "H";
 					}
-					var date = row.GetCell(labels["DateTaken"]).DateCellValue;
 					decimal hours = (decimal)row.GetCell(labels["Hours"])
 						.NumericCellValue;
 					var status = row.GetCell(labels["Status"]).StringCellValue;
