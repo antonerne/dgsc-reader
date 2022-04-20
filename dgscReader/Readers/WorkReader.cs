@@ -83,7 +83,6 @@ namespace OsanScheduler.DgscReader.Readers
 							if (!found)
 							{
 								var work = new Work();
-								work.EmployeeId = emp.Id;
 								work.DateWorked = date;
 								work.CompanyId = emp.CompanyInfo.CompanyCode;
 								work.ChargeNumber = chgNo;

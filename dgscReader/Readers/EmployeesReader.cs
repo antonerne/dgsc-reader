@@ -60,6 +60,10 @@ namespace OsanScheduler.DgscReader.Readers
 				row = sheet.GetRow(i);
 				var endDate = row.GetCell(labels["EndDate"]).DateCellValue;
 				var startDate = row.GetCell(labels["StartDate"]).DateCellValue;
+				while (startDate.DayOfWeek != DayOfWeek.Sunday)
+                {
+					startDate = startDate.AddDays(-1);
+                }
 				if (endDate.Equals(baseDate) || endDate >= expireDate)
 				{
 					var empID = row.GetCell(labels["EmployeeID"]).StringCellValue;
@@ -83,6 +87,10 @@ namespace OsanScheduler.DgscReader.Readers
 						.NumericCellValue;
 					var schedChangeDate = row.GetCell(labels["ScheduleChangeDate"])
 						.DateCellValue;
+					while (schedChangeDate.DayOfWeek != DayOfWeek.Sunday)
+                    {
+						schedChangeDate = schedChangeDate.AddDays(1);
+                    }
 					var altID = "";
 					midCell = row.GetCell(labels["PeoplesoftID"]);
 					if (midCell != null && midCell.CellType != CellType.Blank)
@@ -237,6 +245,7 @@ namespace OsanScheduler.DgscReader.Readers
 						emp.CompanyInfo.CostCenter = costcenter;
 						emp.Roles.Add("Employee");
 						emp.Creds.SetPassword("InitialPassword");
+						emp.Creds.MustChange = true;
 
 						// add assignments for start and end dates, but if
 						// schedulechangefreq > 0 then need to add second

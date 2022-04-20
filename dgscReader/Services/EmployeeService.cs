@@ -26,17 +26,17 @@ namespace OsanScheduler.DgscReader.Services
 			await this._empCollection.Find(emp => emp.TeamID == id).ToListAsync();
 
 		public async Task<Employee> GetAsync(string id) =>
-			await this._empCollection.Find(x => x.Id == new ObjectId(id))
+			await this._empCollection.Find(x => x.Id == id)
 			.FirstOrDefaultAsync();
 
 		public async Task CreateAsync(Employee newEmployee) =>
 			await this._empCollection.InsertOneAsync(newEmployee);
 
-		public async Task UpdateAsync(ObjectId id, Employee updatedEmployee) =>
+		public async Task UpdateAsync(string id, Employee updatedEmployee) =>
 			await this._empCollection
 			.ReplaceOneAsync(x => x.Id == id, updatedEmployee);
 
-		public async Task DeleteAsync(ObjectId id) =>
+		public async Task DeleteAsync(string id) =>
 			await this._empCollection.DeleteOneAsync(x => x.Id == id);
 	}
 }

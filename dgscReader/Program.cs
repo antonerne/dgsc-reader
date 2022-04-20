@@ -44,7 +44,7 @@ Site dgsc = dfs.Sites.First<Site>(s => s.Code == "dgsc");
 var previousYear = DateTime.UtcNow.Year - 1;
 
 // Now get the list of available Employees for the team.
-var emps = new List<ObjectId>();
+var emps = new List<string>();
 if (dfs.Id != ObjectId.Empty)
 {
     var employees = await empService.GetByTeamAsync(dfs.Id);
@@ -58,17 +58,20 @@ if (dfs.Id != ObjectId.Empty)
         }
     });
 }
-var work = await worksService.GetAsync();
-work.ForEach(wk =>
+var empWork = await worksService.GetAsync();
+empWork.ForEach(ewk =>
 {
     var found = false;
 
     for (int e=0; e < dgsc.Employees.Count && !found; e++)
     {
         var emp = dgsc.Employees[e];
-        if (emp.Id.Equals(wk.EmployeeId))
+        if (emp.Id.Equals(ewk.Id))
         {
-            emp.Work.Add(wk);
+            ewk.Work.ForEach(wk =>
+            {
+                emp.Work.Add(wk);
+            });
         }
         dgsc.Employees[e] = emp;
     }
@@ -162,28 +165,35 @@ dgsc.Employees.ForEach(async (emp) =>
 {
     if (emp.Work.Count > 0)
     {
-        List<Work> newWorks = new List<Work>();
-        emp.Work.ForEach(async (wk) =>
+        if (emp.Id.Equals(""))
         {
-            if (wk.Id != ObjectId.Empty)
+            emp.Id = Guid.NewGuid().ToString();
+        }
+        EmployeeWork eWork = new EmployeeWork();
+        eWork.Id = emp.Id;
+        emp.Work.ForEach(wk =>
+        {
+            if (wk.Id.Equals(""))
             {
-                await worksService.UpdateAsync(wk.Id, wk);
+                wk.Id = Guid.NewGuid().ToString();
             }
-            else
-            {
-                newWorks.Add(wk);
-            }
+            eWork.Work.Add(wk);
         });
-        if (newWorks.Count > 0)
+        var ew = await worksService.GetAsync(eWork.Id);
+        if (ew != null)
         {
-            await worksService.CreateManyAsync(newWorks);
+            await worksService.UpdateAsync(eWork.Id, eWork);
+        } else
+        {
+            await worksService.CreateAsync(eWork);
         }
     }
     try
     {
-        if (emp.Id != ObjectId.Empty)
+        var e = await empService.GetAsync(emp.Id);
+        if (e != null)
         {
-            await empService.UpdateAsync(emp.Id, emp);
+            await empService.UpdateAsync(e.Id, emp);
         }
         else
         {
