@@ -1,5 +1,6 @@
 ﻿using System;
 using OsanScheduler.Models.Teams;
+using OsanScheduler.DgscReader.models;
 using NPOI.XSSF.UserModel;
 using NPOI.SS.UserModel;
 
@@ -8,18 +9,18 @@ namespace OsanScheduler.DgscReader.Readers
 {
 	public class HolidayScheduleReader
 	{
-		private readonly Team _team;
+		private readonly Team2 _team;
 		private readonly string _file;
 		private readonly int _utcDiff;
 
-		public HolidayScheduleReader(Team team, int utc, string file)
+		public HolidayScheduleReader(Team2 team, int utc, string file)
 		{
 			this._file = file;
 			this._utcDiff = utc;
 			this._team = team;
 		}
 
-		public Team Process()
+		public Team2 Process()
 		{
 			for (int c = 0; c < this._team.Companies.Count; c++)
             {

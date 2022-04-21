@@ -23,6 +23,12 @@ IConfiguration config = new ConfigurationBuilder()
 ConnectionStrings settings = config.GetRequiredSection("ConnectionStrings")
     .Get<ConnectionStrings>();
 
+
+// Create service classes for data
+TeamsService teamService = new TeamsService(settings);
+EmployeeService empService = new EmployeeService(settings);
+WorksService worksService = new WorksService(settings);
+
 // get the location for the data files
 Console.WriteLine("Scheduler Files Loc ({0}):", settings.DefaultDataDirectory);
 var loc = Console.ReadLine();
@@ -30,22 +36,28 @@ if (loc != null && !loc.Equals(""))
 {
     settings.DefaultDataDirectory = loc;
 }
-
-
-
-// Create service classes for data
-TeamsService teamService = new TeamsService(settings);
-EmployeeService empService = new EmployeeService(settings);
-WorksService worksService = new WorksService(settings);
+Console.WriteLine("Process Teams (Y/n):");
+var teamProcess = Console.ReadLine();
+if (teamProcess != null && (teamProcess.Equals("") || teamProcess.ToLower().Equals("y")))
+{
+    List<Team> teams = await teamService.GetAsync();
+    List<Team2> teams2 = new List<Team2>();
+    teams.ForEach(async tm =>
+    {
+        teams2.Add(new Team2(tm));
+        await teamService.DeleteAsync(tm.Id);
+    });
+    await teamService.CreateManyAsync(teams2.ToArray());
+}
 
 // Read the team(s), finding the DFS Team, then find the DGS-C Site.
-Team dfs = await teamService.GetByCodeAsync("dfs");
+Team2 dfs = await teamService.GetByCodeAsync("dfs");
 Site dgsc = dfs.Sites.First<Site>(s => s.Code == "dgsc");
 var previousYear = DateTime.UtcNow.Year - 1;
 
 // Now get the list of available Employees for the team.
 var emps = new List<string>();
-if (dfs.Id != ObjectId.Empty)
+if (dfs.Id != "")
 {
     var employees = await empService.GetByTeamAsync(dfs.Id);
     employees.ForEach(emp =>

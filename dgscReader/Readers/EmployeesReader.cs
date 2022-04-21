@@ -14,9 +14,9 @@ namespace OsanScheduler.DgscReader.Readers
 	{
 		private readonly Site _dgsc;
 		private readonly string _file;
-		private readonly ObjectId _teamid;
+		private readonly string _teamid;
 
-		public EmployeesReader(Site dgsc, ObjectId teamid, string empFile)
+		public EmployeesReader(Site dgsc, string teamid, string empFile)
 		{
 			this._dgsc = dgsc;
 			this._teamid = teamid;
