@@ -54,6 +54,8 @@ namespace OsanScheduler.DgscReader.Readers
 				row = sheet.GetRow(i);
 				var empID = row.GetCell(labels["EmployeeID"]).StringCellValue;
 				var date = row.GetCell(labels["DateWorked"]).DateCellValue;
+				date = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0,
+					DateTimeKind.Utc);
 				if (date >= expireDate)
 				{
 					var chgNo = row.GetCell(labels["ChargeNumber"]).StringCellValue;

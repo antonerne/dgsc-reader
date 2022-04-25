@@ -36,22 +36,9 @@ if (loc != null && !loc.Equals(""))
 {
     settings.DefaultDataDirectory = loc;
 }
-Console.WriteLine("Process Teams (Y/n):");
-var teamProcess = Console.ReadLine();
-if (teamProcess != null && (teamProcess.Equals("") || teamProcess.ToLower().Equals("y")))
-{
-    List<Team> teams = await teamService.GetAsync();
-    List<Team2> teams2 = new List<Team2>();
-    teams.ForEach(async tm =>
-    {
-        teams2.Add(new Team2(tm));
-        await teamService.DeleteAsync(tm.Id);
-    });
-    await teamService.CreateManyAsync(teams2.ToArray());
-}
 
 // Read the team(s), finding the DFS Team, then find the DGS-C Site.
-Team2 dfs = await teamService.GetByCodeAsync("dfs");
+Team dfs = await teamService.GetByCodeAsync("dfs");
 Site dgsc = dfs.Sites.First<Site>(s => s.Code == "dgsc");
 var previousYear = DateTime.UtcNow.Year - 1;
 
