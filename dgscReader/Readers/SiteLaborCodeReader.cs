@@ -88,7 +88,7 @@ namespace OsanScheduler.DgscReader.Readers
 					if (!found)
                     {
 						var lbr = new SiteLaborCode();
-						lbr.Company = "raytheon";
+						lbr.CompanyCode = "raytheon";
 						lbr.ChargeNumber = chgNo;
 						lbr.Extension = ext;
 						lbr.Division = "RTSC";

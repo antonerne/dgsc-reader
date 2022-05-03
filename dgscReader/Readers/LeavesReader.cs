@@ -70,13 +70,14 @@ namespace OsanScheduler.DgscReader.Readers
 					}
 					decimal hours = (decimal)row.GetCell(labels["Hours"])
 						.NumericCellValue;
-					var status = row.GetCell(labels["Status"]).StringCellValue;
+					var st = row.GetCell(labels["Status"]).StringCellValue;
+					Enum.TryParse<LeaveStatus>(st, out var status);
 
 					var found = false;
 					for (int e = 0; e < this._dgsc.Employees.Count && !found; e++)
 					{
 						var emp = this._dgsc.Employees[e];
-						if (emp.CompanyInfo.EmployeeID.Equals(empID))
+						if (emp.CompanyInfo.CompanyID.Equals(empID))
 						{
 							for (int l = 0; l < emp.Leaves.Count && !found; l++)
 							{

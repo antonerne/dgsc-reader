@@ -64,7 +64,7 @@ namespace OsanScheduler.DgscReader.Readers
 				for (int e=0; e < this._dgsc.Employees.Count && !found; e++)
                 {
 					var emp = this._dgsc.Employees[e];
-					if (emp.CompanyInfo.EmployeeID.Equals(empID))
+					if (emp.CompanyInfo.CompanyID.Equals(empID))
                     {
 						emp.Assignments.Sort();
 						var asgmt = emp.Assignments[emp.Assignments.Count - 1];
