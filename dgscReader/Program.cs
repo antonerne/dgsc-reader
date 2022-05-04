@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using OsanScheduler.Models.DB;
 using OsanScheduler.Models.Sites;
 using OsanScheduler.Models.Teams;
 using OsanScheduler.Models.Employees.Labor;
 using OsanScheduler.DgscReader.models;
 using OsanScheduler.DgscReader.Readers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,12 +36,53 @@ if (loc != null && !loc.Equals(""))
 if (context.dbTeams.Count() <= 0)
 {
     // load initial data
-    var tm = new Team();
-    Console.WriteLine(tm.ToJson());
+    string initialloc = "/Users/antonerne/Projects/scheduler/csharp/dgsc-reader/dgscReader/initial.json";
+    using (StreamReader r = new StreamReader(initialloc))
+    {
+        string json = r.ReadToEnd();
+        List<Team>? cts = JsonSerializer.Deserialize<List<Team>>(json);
+        if (cts != null)
+        {
+            Console.WriteLine(cts.Count);
+            cts.ForEach(tm =>
+            {
+                Console.WriteLine(tm.ToJson());
+                tm.DateCreated = DateTime.UtcNow;
+                tm.LastUpdated = DateTime.UtcNow;
+                if (tm.Sites != null)
+                {
+                    tm.Sites.ForEach(site =>
+                    {
+                        site.LastUpdated = DateTime.UtcNow;
+                        site.DateCreated = DateTime.UtcNow;
+                    });
+                }
+                context.dbTeams.Add(tm);
+                Console.WriteLine("Added {0}", tm.Name);
+            });
+            context.SaveChanges();
+        }
+    }
 }
 
 // Read the team(s), finding the DFS Team, then find the DGS-C Site.
-/*Team dfs = context.dbTeams.Single(tm => tm.Code.Equals("dfs"));
+Team dfs = context.dbTeams
+    .Include(tm => tm.Companies)
+    .ThenInclude(co => co.Holidays)
+    .Include(tm => tm.ContactTypes)
+    .Include(tm => tm.DisplayCodes)
+    .Include(tm => tm.SpecialtyGroups)
+    .ThenInclude(sg => sg.Areas)
+    .Include(tm => tm.Sites)
+    .ThenInclude(site => site.LaborCodes)
+    .Include(tm => tm.Sites)
+    .ThenInclude(site => site.WorkCodes)
+    .Include(tm => tm.Sites)
+    .ThenInclude(site => site.Workcenters)
+    .ThenInclude(wc => wc.Positions)
+    .Single(tm => tm.Code.ToLower().Equals("dfs"));
+    
+Console.WriteLine(dfs.ToJson());
 Site dgsc = dfs.Sites.First<Site>(s => s.Code == "dgsc");
 var previousYear = DateTime.UtcNow.Year - 1;
 
@@ -161,15 +204,23 @@ foreach (var file in files)
 // database.
 dgsc.Employees.ForEach(emp =>
 {
-    if (emp.Work.Count > 0)
+    if (emp.Id > 0)
+    {
+        context.dbEmployees.Update(emp);
+    } else
+    {
+        context.dbEmployees.Add(emp);
+    }
+    context.SaveChanges();
+    Console.WriteLine(emp.ToJson());
+
+    /*if (emp.Work.Count > 0)
     {
         if (emp.Id.Equals(""))
         {
             context.dbEmployees.Add(emp);
             context.SaveChanges();
         }
-        /**EmployeeWork eWork = new EmployeeWork();
-        eWork.Id = emp.Id;
         emp.Work.ForEach(wk =>
         {
             if (wk.Id.Equals(""))
@@ -185,24 +236,9 @@ dgsc.Employees.ForEach(emp =>
         } else
         {
             await worksService.CreateAsync(eWork);
-        }*/
-    //}
-    /*try
-    {
-        var e = await empService.GetAsync(emp.Id);
-        if (e != null)
-        {
-            await empService.UpdateAsync(e.Id, emp);
         }
-        else
-        {
-            await empService.CreateAsync(emp);
-        }
-    } catch (Exception ex)
-    {
-        Console.WriteLine(ex.StackTrace);
     }*/
-//});
+});
 
     // Update the dgsc site in the team and the teams object to the database
     /*var found = false;
@@ -219,4 +255,4 @@ dgsc.Employees.ForEach(emp =>
 
 Console.WriteLine("Completed");
 
-await host.RunAsync();
+host.Run();
