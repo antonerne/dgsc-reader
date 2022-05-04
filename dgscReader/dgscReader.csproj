@@ -36,6 +36,6 @@
     <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Scheduler\models2\OsanScheduler.csproj" />
+    <ProjectReference Include="..\..\CSharpModels\models2\OsanScheduler.csproj" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using OsanScheduler.Models.Sites;
 using OsanScheduler.Models.Teams;
 using OsanScheduler.Models.Employees.Labor;
@@ -36,6 +37,39 @@ if (loc != null && !loc.Equals(""))
 {
     settings.DefaultDataDirectory = loc;
 }
+
+// add initial data if no teams are present
+List<Team> teams = await teamService.GetAsync();
+if (teams == null || teams.Count <= 0)
+{
+    // no teams, so no initial data loaded.  Add it from the initial data
+    // json file
+    using (StreamReader r = new StreamReader(settings.InitialDataLocation))
+    {
+        string json = r.ReadToEnd();
+        List<Team>? cts = JsonSerializer.Deserialize<List<Team>>(json);
+        if (cts != null)
+        {
+            cts.ForEach(async ct =>
+            {
+                ct.Id = Guid.NewGuid().ToString();
+                ct.DateCreated = DateTime.UtcNow;
+                ct.LastUpdated = DateTime.UtcNow;
+                if (ct.Sites != null && ct.Sites.Count > 0)
+                {
+                    ct.Sites.ForEach(site =>
+                    {
+                        site.ID = Guid.NewGuid().ToString();
+                        site.DateCreated = DateTime.UtcNow;
+                        site.LastUpdated = DateTime.UtcNow;
+                    });
+                }
+                await teamService.CreateAsync(ct);
+            });
+        }
+    }
+}
+
 
 // Read the team(s), finding the DFS Team, then find the DGS-C Site.
 Team dfs = await teamService.GetByCodeAsync("dfs");
