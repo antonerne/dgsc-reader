@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using OsanScheduler.Models.DB;
 using OsanScheduler.Models.Sites;
 using OsanScheduler.Models.Teams;
 using OsanScheduler.Models.Employees.Labor;
+using MongoDB.Driver;
+using MongoDB.Bson;
 using OsanScheduler.DgscReader.models;
+using OsanScheduler.DgscReader.Services;
 using OsanScheduler.DgscReader.Readers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +23,11 @@ IConfiguration config = new ConfigurationBuilder()
 ConnectionStrings settings = config.GetRequiredSection("ConnectionStrings")
     .Get<ConnectionStrings>();
 
-using var context = new SchedulerDBContext(settings.DefaultConnection);
+
+// Create service classes for data
+TeamsService teamService = new TeamsService(settings);
+EmployeeService empService = new EmployeeService(settings);
+WorksService worksService = new WorksService(settings);
 
 // get the location for the data files
 Console.WriteLine("Scheduler Files Loc ({0}):", settings.DefaultDataDirectory);
@@ -31,35 +37,27 @@ if (loc != null && !loc.Equals(""))
     settings.DefaultDataDirectory = loc;
 }
 
-if (context.dbTeams.Count() <= 0)
-{
-    // load initial data
-    var tm = new Team();
-    Console.WriteLine(tm.ToJson());
-}
-
 // Read the team(s), finding the DFS Team, then find the DGS-C Site.
-/*Team dfs = context.dbTeams.Single(tm => tm.Code.Equals("dfs"));
+Team dfs = await teamService.GetByCodeAsync("dfs");
 Site dgsc = dfs.Sites.First<Site>(s => s.Code == "dgsc");
 var previousYear = DateTime.UtcNow.Year - 1;
 
 // Now get the list of available Employees for the team.
-var emps = new List<int>();
-if (dfs.Id != 0)
+var emps = new List<string>();
+if (dfs.Id != "")
 {
-    var employees = context.dbEmployees
-        .Where(e => e.TeamID == dfs.Id).ToList();
+    var employees = await empService.GetByTeamAsync(dfs.Id);
     employees.ForEach(emp =>
     {
         var current = emp.GetCurrentSite(new DateTime(previousYear, 1, 1), DateTime.UtcNow);
-        if (dgsc.Code.ToLower().Equals(current.ToLower()))
+        if (dgsc.ID.Equals(current) || dgsc.Code.ToLower().Equals(current.ToLower()))
         {
             dgsc.Employees.Add(emp);
             emps.Add(emp.Id);
         }
     });
 }
-var empWork = context.dbWork.ToList();
+var empWork = await worksService.GetAsync();
 empWork.ForEach(ewk =>
 {
     var found = false;
@@ -69,7 +67,10 @@ empWork.ForEach(ewk =>
         var emp = dgsc.Employees[e];
         if (emp.Id.Equals(ewk.Id))
         {
-            emp.Work.Add(ewk);
+            ewk.Work.ForEach(wk =>
+            {
+                emp.Work.Add(wk);
+            });
         }
         dgsc.Employees[e] = emp;
     }
@@ -159,16 +160,15 @@ foreach (var file in files)
 
 // lastly update the team, site employees, and employee work information to the
 // database.
-dgsc.Employees.ForEach(emp =>
+dgsc.Employees.ForEach(async (emp) =>
 {
     if (emp.Work.Count > 0)
     {
         if (emp.Id.Equals(""))
         {
-            context.dbEmployees.Add(emp);
-            context.SaveChanges();
+            emp.Id = Guid.NewGuid().ToString();
         }
-        /**EmployeeWork eWork = new EmployeeWork();
+        EmployeeWork eWork = new EmployeeWork();
         eWork.Id = emp.Id;
         emp.Work.ForEach(wk =>
         {
@@ -185,9 +185,9 @@ dgsc.Employees.ForEach(emp =>
         } else
         {
             await worksService.CreateAsync(eWork);
-        }*/
-    //}
-    /*try
+        }
+    }
+    try
     {
         var e = await empService.GetAsync(emp.Id);
         if (e != null)
@@ -201,21 +201,20 @@ dgsc.Employees.ForEach(emp =>
     } catch (Exception ex)
     {
         Console.WriteLine(ex.StackTrace);
-    }*/
-//});
+    }
+});
 
-    // Update the dgsc site in the team and the teams object to the database
-    /*var found = false;
-    for (int s=0; s < dfs.Sites.Count && !found; s++)
-    {
+// Update the dgsc site in the team and the teams object to the database
+var found = false;
+for (int s=0; s < dfs.Sites.Count && !found; s++)
+{
     if (dfs.Sites[s].Equals(dgsc))
     {
         dfs.Sites[s] = dgsc;
         found = true;
     }
-    
-    await teamService.UpdateAsync(dfs.Id, dfs);
-    */
+}
+await teamService.UpdateAsync(dfs.Id, dfs);
 
 Console.WriteLine("Completed");
 

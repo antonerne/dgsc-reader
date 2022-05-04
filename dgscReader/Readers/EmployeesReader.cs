@@ -14,9 +14,9 @@ namespace OsanScheduler.DgscReader.Readers
 	{
 		private readonly Site _dgsc;
 		private readonly string _file;
-		private readonly int _teamid;
+		private readonly string _teamid;
 
-		public EmployeesReader(Site dgsc, int teamid, string empFile)
+		public EmployeesReader(Site dgsc, string teamid, string empFile)
 		{
 			this._dgsc = dgsc;
 			this._teamid = teamid;
@@ -120,7 +120,7 @@ namespace OsanScheduler.DgscReader.Readers
 					// use it to either create a new employee or to update the
 					// employee's record at the site.
 					Employee? emp = this._dgsc.Employees
-						.Find(e => e.CompanyInfo.CompanyID.Equals(empID));
+						.Find(e => e.CompanyInfo.EmployeeID.Equals(empID));
 					if (emp != null)
 					{
 						// employee listed for site, so update.
@@ -128,7 +128,7 @@ namespace OsanScheduler.DgscReader.Readers
 						for (int e = 0; e < this._dgsc.Employees.Count
 							&& empPos < 0; e++)
                         {
-							if (this._dgsc.Employees[e].CompanyInfo.CompanyID.Equals(empID))
+							if (this._dgsc.Employees[e].CompanyInfo.EmployeeID.Equals(empID))
                             {
 								empPos = e;
                             }
@@ -137,7 +137,7 @@ namespace OsanScheduler.DgscReader.Readers
 						emp.Name.First = firstName;
 						emp.Name.Middle = middleName;
 						emp.CompanyInfo.CompanyCode = company.ToLower();
-						emp.CompanyInfo.CompanyID = empID;
+						emp.CompanyInfo.EmployeeID = empID;
 						emp.CompanyInfo.AlternateID = altID;
 						emp.CompanyInfo.Rank = rank;
 						emp.CompanyInfo.Division = division;
@@ -238,12 +238,12 @@ namespace OsanScheduler.DgscReader.Readers
 							+ lastName.ToLower() + "@" + company.ToLower()
 							+ ".com";
 						emp.CompanyInfo.CompanyCode = company.ToLower();
-						emp.CompanyInfo.CompanyID = empID;
+						emp.CompanyInfo.EmployeeID = empID;
 						emp.CompanyInfo.AlternateID = altID;
 						emp.CompanyInfo.Rank = rank;
 						emp.CompanyInfo.Division = division;
 						emp.CompanyInfo.CostCenter = costcenter;
-						emp.Role = Models.Employees.EmployeeInfo.Permission.Employee;
+						emp.Roles.Add("Employee");
 						emp.Creds.SetPassword("InitialPassword");
 						emp.Creds.MustChange = true;
 

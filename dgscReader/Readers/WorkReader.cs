@@ -70,7 +70,7 @@ namespace OsanScheduler.DgscReader.Readers
 					for (int e = 0; e < this._dgsc.Employees.Count && !found; e++)
 					{
 						var emp = this._dgsc.Employees[e];
-						if (emp.CompanyInfo.CompanyID.Equals(empID))
+						if (emp.CompanyInfo.EmployeeID.Equals(empID))
 						{
 							for (int w = 0; w < emp.Work.Count && !found; w++)
 							{
@@ -86,7 +86,7 @@ namespace OsanScheduler.DgscReader.Readers
 							{
 								var work = new Work();
 								work.DateWorked = date;
-								work.CompanyCode = emp.CompanyInfo.CompanyCode;
+								work.CompanyId = emp.CompanyInfo.CompanyCode;
 								work.ChargeNumber = chgNo;
 								work.Extension = ext;
 								work.Hours = hours;

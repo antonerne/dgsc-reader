@@ -59,7 +59,7 @@ namespace OsanScheduler.DgscReader.Readers
 					for (int e = 0; e < this._dgsc.Employees.Count && empPos < 0; e++)
 					{
 						Employee emp = this._dgsc.Employees[e];
-						if (emp.CompanyInfo.CompanyID.Equals(empId))
+						if (emp.CompanyInfo.EmployeeID.Equals(empId))
 						{
 							empPos = e;
 							var balPos = -1;

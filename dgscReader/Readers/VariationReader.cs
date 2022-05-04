@@ -93,7 +93,7 @@ namespace OsanScheduler.DgscReader.Readers
 							}
 						}
 					}
-					if (emp.CompanyInfo.CompanyID.Equals(empID))
+					if (emp.CompanyInfo.EmployeeID.Equals(empID))
                     {
 						for (int v=0; v < emp.Variations.Count && !found; v++)
                         {
